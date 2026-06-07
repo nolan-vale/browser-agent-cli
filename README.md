@@ -1,5 +1,7 @@
 <div align="center">
 
+[Русский](README.ru.md) · [中文](README.zh-CN.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
+
 <!--
   COVER IMAGE — generate with this prompt, save as docs/cover.png, then uncomment below.
 
