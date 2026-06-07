@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Trying graceful shutdown of Google Chrome Beta..."
+
+osascript -e 'quit app "Google Chrome Beta"' 2>/dev/null || true
+sleep 3
+
+if pgrep -f "Google Chrome Beta" >/dev/null 2>&1; then
+  echo "Chrome Beta still running. Trying SIGTERM..."
+  pkill -f "Google Chrome Beta" 2>/dev/null || true
+  sleep 2
+fi
+
+if pgrep -f "Google Chrome Beta" >/dev/null 2>&1; then
+  echo "Chrome Beta still running. Last resort SIGKILL..."
+  pkill -9 -f "Google Chrome Beta" 2>/dev/null || true
+  sleep 1
+fi
+
+echo "Done."

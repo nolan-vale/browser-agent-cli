@@ -1,0 +1,73 @@
+# browser-agent-cli
+
+> Real browser automation for AI coding agents — launch Chrome Beta with a dedicated agent profile and control it via Chrome DevTools Protocol (CDP). No headless mode. Persistent logins. Isolated from the user's personal browser.
+
+## Install
+
+```bash
+git clone https://github.com/nolan-vale/browser-agent-cli.git
+cd browser-agent-cli && bash install.sh
+npm install -g chrome-devtools-mcp
+```
+
+Requires: macOS, Google Chrome Beta.
+
+## Commands
+
+- `chrome-beta-agent [url]` — launch Chrome Beta with agent profile + CDP on port 9222; if already running, opens url in a new tab
+- `chrome-beta-agent-stop` — gracefully stop the agent browser
+- `chrome-devtools <cmd>` — control the browser via CDP (from `chrome-devtools-mcp` npm package)
+
+## Full stack
+
+```
+chrome-beta-agent <url>  →  http://127.0.0.1:9222  →  chrome-devtools <command>
+```
+
+## Core chrome-devtools commands
+
+- `chrome-devtools take_snapshot` — a11y tree of the page, returns element UIDs
+- `chrome-devtools click "uid"` — click an element
+- `chrome-devtools fill "uid" "text"` — type into an input
+- `chrome-devtools navigate_page --url "https://..."` — navigate
+- `chrome-devtools take_screenshot` — screenshot of the viewport
+- `chrome-devtools list_console_messages` — browser console log
+- `chrome-devtools list_network_requests` — network tab
+- `chrome-devtools evaluate_script "() => document.title"` — run JS
+
+## Best for
+
+- AI coding agents that need a real browser with persistent logins
+- Automating web apps, dashboards, and login-protected content
+- Browser UI testing with visible feedback
+- Agents that need to observe, not just scrape
+
+## Why real browser (not headless)
+
+- Persistent logins across sessions — no re-auth
+- Not blocked by anti-bot systems
+- Visible — easy to observe and intervene
+- Dedicated agent profile keeps agent sessions separate from user's Chrome
+
+## Skill for Claude Code / Codex
+
+`skills/SKILL.md` — copy to `~/.claude/skills/chrome-devtools-cli/SKILL.md` and `~/.codex/skills/chrome-devtools-cli/SKILL.md`. `install.sh` does this automatically.
+
+## Safety
+
+Agents must ask before: form submit, send, delete, upload, account/billing changes.
+Agents must stop for: login, CAPTCHA, MFA, passkey, SMS/email verification.
+
+## Key files
+
+- `README.md` — overview and usage
+- `AGENTS.md` — for AI agents
+- `bin/chrome-beta-agent` — launcher script
+- `bin/chrome-beta-agent-stop` — stop script
+- `skills/SKILL.md` — Claude Code / Codex skill
+
+## Links
+
+- GitHub: https://github.com/nolan-vale/browser-agent-cli
+- chrome-devtools CLI: https://www.npmjs.com/package/chrome-devtools-mcp
+- CDP reference: https://chromedevtools.github.io/devtools-protocol/

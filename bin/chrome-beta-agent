@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT="${CHROME_AGENT_PORT:-9222}"
+PROFILE_DIR="${CHROME_AGENT_PROFILE:-$HOME/.chrome-beta-agent-research}"
+CHROME_APP="/Applications/Google Chrome Beta.app"
+CHROME_BIN="/Applications/Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta"
+OPEN_URL="${1:-}"
+
+agent_profile_pids() {
+  local found="" pids=""
+  pids="$(pgrep -f "Google Chrome Beta.*--user-data-dir=${PROFILE_DIR}" 2>/dev/null || true)"
+  if [ -n "$pids" ]; then
+    found=1
+    echo "$pids"
+  fi
+  if [ -L "${PROFILE_DIR}/SingletonLock" ]; then
+    local lock_target lock_pid
+    lock_target="$(readlink "${PROFILE_DIR}/SingletonLock" 2>/dev/null || true)"
+    lock_pid="${lock_target##*-}"
+    if [ -n "$lock_pid" ] && kill -0 "$lock_pid" 2>/dev/null; then
+      found=1
+      echo "$lock_pid"
+    fi
+  fi
+  [ -n "$found" ]
+}
+
+cdp_version_json() {
+  local body
+  body="$(curl -fsS --max-time 2 "http://127.0.0.1:${PORT}/json/version" 2>/dev/null)" || return 1
+  python3 -c '
+import json, sys
+try:
+    data = json.loads(sys.stdin.read())
+except Exception:
+    sys.exit(1)
+if not data.get("webSocketDebuggerUrl"):
+    sys.exit(1)
+print(json.dumps(data, indent=2, sort_keys=True))
+' <<<"$body"
+}
+
+open_new_tab() {
+  local url="$1"
+  local encoded target
+  encoded="$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1], safe=":/?#[]@!$&'\''()*+,;=%"))' "$url")"
+  target="$(curl -fsS --max-time 5 -X PUT "http://127.0.0.1:${PORT}/json/new?${encoded}" 2>/dev/null)" || {
+    echo "Failed to open URL through CDP: ${url}"
+    return 1
+  }
+  python3 -c '
+import json, sys
+try:
+    data = json.loads(sys.stdin.read())
+except Exception:
+    sys.exit(1)
+print("Opened tab: " + data.get("url", ""))
+' <<<"$target"
+}
+
+if version_json="$(cdp_version_json)"; then
+  echo "Chrome Beta agent browser is already running on port ${PORT}"
+  if [ -n "$OPEN_URL" ]; then
+    open_new_tab "$OPEN_URL"
+  fi
+  echo "$version_json"
+  exit 0
+fi
+
+if agent_profile_pids >/dev/null; then
+  PIDS="$(agent_profile_pids)"
+  echo "Chrome Beta agent profile is running, but CDP ${PORT} is not healthy."
+  echo "Restarting only the dedicated agent profile before relaunch."
+  if [ -n "$PIDS" ]; then
+    # shellcheck disable=SC2086
+    kill -TERM $PIDS 2>/dev/null || true
+  fi
+  sleep 2
+  PIDS="$(agent_profile_pids)"
+  if [ -n "$PIDS" ]; then
+    # shellcheck disable=SC2086
+    kill -KILL $PIDS 2>/dev/null || true
+    sleep 1
+  fi
+  rm -f "${PROFILE_DIR}/SingletonLock" "${PROFILE_DIR}/SingletonSocket" "${PROFILE_DIR}/SingletonCookie" 2>/dev/null || true
+fi
+
+if lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
+  echo "Port ${PORT} is listening, but it is not a healthy Chrome CDP endpoint."
+  echo "Refusing to launch another Chrome Beta instance on the same port."
+  echo "Use chrome-beta-agent-stop only if you want to reset the Chrome Beta agent browser."
+  exit 2
+fi
+
+if [ ! -d "$CHROME_APP" ] || [ ! -x "$CHROME_BIN" ]; then
+  echo "Google Chrome Beta app not found at: $CHROME_APP"
+  exit 1
+fi
+
+mkdir -p "$PROFILE_DIR"
+
+echo "Launching Google Chrome Beta agent profile:"
+echo "  Port: ${PORT}"
+echo "  Profile: ${PROFILE_DIR}"
+
+open -na "Google Chrome Beta" --args \
+  --remote-debugging-port="${PORT}" \
+  --remote-debugging-address=127.0.0.1 \
+  --user-data-dir="${PROFILE_DIR}" \
+  --no-first-run \
+  --no-default-browser-check \
+  about:blank
+
+for _ in {1..20}; do
+  if version_json="$(cdp_version_json)"; then
+    break
+  fi
+  sleep 0.5
+done
+
+if version_json="$(cdp_version_json)"; then
+  echo "Chrome Beta agent browser launched successfully."
+  if [ -n "$OPEN_URL" ]; then
+    open_new_tab "$OPEN_URL"
+  fi
+  echo "$version_json"
+else
+  echo "Failed to launch Chrome Beta with CDP port ${PORT}."
+  echo "Check /tmp/chrome-beta-agent.log"
+  exit 1
+fi
