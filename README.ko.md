@@ -53,6 +53,7 @@ chrome-beta-agent-stop                  # 브라우저 종료
 - macOS
 - [Google Chrome Beta](https://www.google.com/chrome/beta/)(`/Applications/Google Chrome Beta.app`)
 - `curl` 및 `python3`(macOS 기본 설치)
+- [`jq`](https://jqlang.org) (`brew install jq`)
 
 ## 명령어
 

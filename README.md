@@ -92,6 +92,7 @@ npm install -g chrome-devtools-mcp
 - macOS
 - [Google Chrome Beta](https://www.google.com/chrome/beta/) installed at `/Applications/Google Chrome Beta.app`
 - `curl` and `python3` (pre-installed on macOS)
+- [`jq`](https://jqlang.org) (`brew install jq`)
 
 ## Quick start
 

@@ -53,6 +53,7 @@ chrome-beta-agent-stop                   # 停止浏览器
 - macOS
 - [Google Chrome Beta](https://www.google.com/chrome/beta/)，安装于 `/Applications/Google Chrome Beta.app`
 - `curl` 和 `python3`（macOS 预装）
+- [`jq`](https://jqlang.org)（`brew install jq`）
 
 ## 命令
 

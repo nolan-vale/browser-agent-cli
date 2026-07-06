@@ -10,7 +10,7 @@ cd browser-agent-cli && bash install.sh
 npm install -g chrome-devtools-mcp
 ```
 
-Requires: macOS, Google Chrome Beta at `/Applications/Google Chrome Beta.app`.
+Requires: macOS, Google Chrome Beta at `/Applications/Google Chrome Beta.app`, `curl`, `python3` (pre-installed), and `jq` (`brew install jq`).
 
 ## Commands
 
@@ -52,7 +52,7 @@ http://127.0.0.1:9222
 Health check:
 
 ```bash
-curl -s http://127.0.0.1:9222/json/version | python3 -m json.tool
+curl -s http://127.0.0.1:9222/json/version | jq .
 ```
 
 ## Recovery

@@ -53,6 +53,7 @@ chrome-beta-agent-stop                  # pare o navegador
 - macOS
 - [Google Chrome Beta](https://www.google.com/chrome/beta/) em `/Applications/Google Chrome Beta.app`
 - `curl` e `python3` (pré-instalados no macOS)
+- [`jq`](https://jqlang.org) (`brew install jq`)
 
 ## Comandos
 
