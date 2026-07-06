@@ -128,6 +128,7 @@ chrome-devtools list_network_requests --includePreservedRequests true # Include 
 ```bash
 chrome-devtools evaluate_script "() => document.title" # Evaluate a JavaScript function on the page
 chrome-devtools evaluate_script "(a) => a.innerText" --args 1_4 # Evaluate JS with UID arguments
+chrome-devtools evaluate_script --filePath script.js # Evaluate a script from a file instead of inlining it (keeps large scripts out of the transcript)
 chrome-devtools get_console_message 1 # Gets a console message by its ID
 chrome-devtools lighthouse_audit --mode "navigation" # Run Lighthouse audit for navigation
 chrome-devtools lighthouse_audit --mode "snapshot" --device "mobile" # Run Lighthouse audit for a snapshot on mobile
@@ -172,4 +173,16 @@ Only needed if the daemon lost connection to Chrome Beta (e.g. after a browser r
 chrome-devtools start --browserUrl http://127.0.0.1:9222  # Restart daemon, connect to Chrome Beta
 chrome-devtools status  # Check daemon status and version
 chrome-devtools stop    # Stop daemon
+```
+
+Optional startup flags to reduce context size:
+
+```bash
+chrome-devtools start --browserUrl http://127.0.0.1:9222 --screenshotFormat webp --screenshotQuality 80
+# Sets the default take_screenshot format/quality for the whole session (webp/jpeg are ~3-5x smaller than PNG)
+# without needing --format/--quality on every take_screenshot call.
+
+chrome-devtools start --browserUrl http://127.0.0.1:9222 --slim
+# Exposes a reduced tool set (lower token overhead per session). Use when the task
+# only needs core navigation/inspection tools, not the full surface (extensions, performance, etc).
 ```
