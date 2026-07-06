@@ -29,16 +29,7 @@ agent_profile_pids() {
 cdp_version_json() {
   local body
   body="$(curl -fsS --max-time 2 "http://127.0.0.1:${PORT}/json/version" 2>/dev/null)" || return 1
-  python3 -c '
-import json, sys
-try:
-    data = json.loads(sys.stdin.read())
-except Exception:
-    sys.exit(1)
-if not data.get("webSocketDebuggerUrl"):
-    sys.exit(1)
-print(json.dumps(data, indent=2, sort_keys=True))
-' <<<"$body"
+  jq -e -S 'select(.webSocketDebuggerUrl != null)' <<<"$body" 2>/dev/null
 }
 
 open_new_tab() {
@@ -49,14 +40,7 @@ open_new_tab() {
     echo "Failed to open URL through CDP: ${url}"
     return 1
   }
-  python3 -c '
-import json, sys
-try:
-    data = json.loads(sys.stdin.read())
-except Exception:
-    sys.exit(1)
-print("Opened tab: " + data.get("url", ""))
-' <<<"$target"
+  echo "Opened tab: $(jq -r '.url // ""' <<<"$target")"
 }
 
 if version_json="$(cdp_version_json)"; then
@@ -68,14 +52,12 @@ if version_json="$(cdp_version_json)"; then
   exit 0
 fi
 
-if agent_profile_pids >/dev/null; then
-  PIDS="$(agent_profile_pids)"
+PIDS="$(agent_profile_pids)"
+if [ -n "$PIDS" ]; then
   echo "Chrome Beta agent profile is running, but CDP ${PORT} is not healthy."
   echo "Restarting only the dedicated agent profile before relaunch."
-  if [ -n "$PIDS" ]; then
-    # shellcheck disable=SC2086
-    kill -TERM $PIDS 2>/dev/null || true
-  fi
+  # shellcheck disable=SC2086
+  kill -TERM $PIDS 2>/dev/null || true
   sleep 2
   PIDS="$(agent_profile_pids)"
   if [ -n "$PIDS" ]; then
