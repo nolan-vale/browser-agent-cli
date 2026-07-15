@@ -206,6 +206,10 @@ Agents using this stack follow these rules by default (enforced in the skill):
 - Submit forms, send messages, change settings, delete data, upload, pay → ask user first
 - CAPTCHA / MFA / login → stop and ask user to complete manually
 
+## How this was built
+
+Spec first, then a plan, then implementation with AI coding agents (Claude Code, Codex). Every diff gets reviewed before merge, and releases go through tests and basic security checks. More on the process on the [Nolan Vale profile](https://github.com/nolan-vale).
+
 ## Project metadata
 
 - **Author:** Nolan Vale
