@@ -20,6 +20,14 @@ Requires: macOS, Google Chrome Beta at `/Applications/Google Chrome Beta.app`, `
 | `chrome-beta-agent-stop` | Gracefully shut down the agent browser. |
 | `chrome-devtools <cmd>` | Control the browser via CDP (separate package: `chrome-devtools-mcp`). |
 
+## Agent Memory v5
+
+- Current task state: `.agent/current.md`.
+- Stable repo context: `memory/project.md`.
+- Durable decisions: `memory/decisions/*.md`.
+- Substantial plans or research syntheses: `memory/specs/*.md`.
+- Do not create repo-local task mirrors.
+
 ## Full workflow
 
 ```bash
