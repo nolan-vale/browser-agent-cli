@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "repo_id": "nolan-vale/browser-agent-cli",
+  "purpose": "Provides visible Chrome browser automation for AI agents through a dedicated profile and Chrome DevTools Protocol.",
+  "objective": null,
+  "sources": [{"role": "overview", "path": "README.md", "verify_live": true}],
+  "exclude": []
+}
