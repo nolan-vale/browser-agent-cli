@@ -1,69 +1,44 @@
-<div align="center">
+# browser-agent-cli
+
+**A visible Chrome Beta workspace for supervised AI-assisted browser tasks on macOS.**
 
 [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
 
-<!--
-  COVER IMAGE — generate with this prompt, save as docs/cover.png, then uncomment below.
+[![License: MIT](https://img.shields.io/badge/license-MIT-6B705C.svg)](LICENSE)
+[![Platform: macOS](https://img.shields.io/badge/platform-macOS-334155.svg)](https://www.apple.com/macos/)
+[![Shell: bash](https://img.shields.io/badge/shell-bash-334155.svg)](https://www.gnu.org/software/bash/)
 
-  Prompt (Midjourney / DALL-E 3 / Stable Diffusion XL):
-  "A glowing Chrome browser window floating in a dark void, connected by luminous cyan lines
-  to a terminal cursor and abstract AI agent nodes, deep space background, neon blue and
-  white accent colors, minimalist developer aesthetic, no text, no UI chrome,
-  wide cinematic banner, 2:1 aspect ratio"
+## Practical purpose
 
-  <img src="docs/cover.png" alt="browser-agent-cli" width="100%">
--->
+Give an AI coding agent a browser session that a person can watch and interrupt. The launcher uses a separate browser profile for tasks involving web applications, dashboards, research, and other authorized browser-based work.
 
-# browser-agent-cli
+This is a small launcher and workflow-instruction project. Chrome and the connected DevTools tools provide the underlying browser and control capabilities; this repository is not a new browser, a full automation platform, or an access-control system.
 
-Real browser automation for AI coding agents — launch Chrome with a dedicated agent profile and control it via Chrome DevTools Protocol.
+## Project contribution
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0ea5e9.svg)](LICENSE)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-0ea5e9.svg)](https://www.apple.com/macos/)
-[![Shell: bash](https://img.shields.io/badge/shell-bash-0ea5e9.svg)](https://www.gnu.org/software/bash/)
-[![Stars](https://img.shields.io/github/stars/nolan-vale/browser-agent-cli?style=social)](https://github.com/nolan-vale/browser-agent-cli)
-
-</div>
-
----
+Built with AI coding agents as part of [Nolan Vale's](https://github.com/nolan-vale) independent product and workflow-automation work. My contribution is defining the task and intended behavior, directing AI-assisted implementation, checking the workflow, and iterating. **Nolan Vale Tools** is the label for these independent public projects.
 
 ## What it does
 
-`browser-agent-cli` gives AI coding agents a real, visible browser with a dedicated profile — separate from the user's personal browser. No headless mode. No re-authentication. No interference with the user's sessions.
+- **`chrome-beta-agent`** launches Chrome Beta with a dedicated profile and Chrome DevTools Protocol (CDP) access. When it detects a healthy existing session, it can open another tab instead of starting a new instance.
+- **`chrome-beta-agent-stop`** attempts to stop Chrome Beta. See the application-wide shutdown warning below.
+- **`skills/SKILL.md`** supplies instructions for browser use, recovery, and human approval of consequential actions.
 
-`chrome-beta-agent` launches Google Chrome Beta with an isolated agent profile and Chrome DevTools Protocol (CDP) enabled on port 9222. It is idempotent: if Chrome Beta is already running and healthy, it opens a new tab instead of starting a second instance. `chrome-beta-agent-stop` gracefully shuts down the agent browser.
+A saved profile can retain login state, but sessions may expire or require reauthentication. A visible browser helps observation; it does not guarantee undetectable automation, correct agent behavior, or exemption from a website's access rules.
 
-The agent controls the browser through CDP — directly or via the [chrome-devtools CLI](https://www.npmjs.com/package/chrome-devtools-mcp).
+## Workflow structure
 
-## Who it is for
-
-- AI agent developers who need a real browser with persistent logins for automated workflows
-- Developers using Claude Code, Codex, Cursor, or Windsurf who want browser automation without Playwright or headless Chrome
-- Automation engineers who need an isolated, recoverable browser profile for agent tasks
-- Anyone building AI agents that interact with web apps, dashboards, or login-protected content
-
-## Why a real browser instead of headless
-
-| Headless (Playwright / Puppeteer) | browser-agent-cli |
-|---|---|
-| No persistent logins — re-authenticates every run | Keeps logins across sessions |
-| Blocked by anti-bot systems | Indistinguishable from a real user |
-| No visible UI — hard to debug | Visible browser — easy to observe and intervene |
-| Requires Playwright install + browser download | Uses Chrome Beta already on the machine |
-| Separate from the user's Chrome profile | Dedicated agent profile, isolated from personal sessions |
-
-## Full agent stack
-
-```
-chrome-beta-agent <url>            ← launch / open tab (this repo)
-    ↓
-http://127.0.0.1:9222              ← Chrome DevTools Protocol endpoint
-    ↓
-chrome-devtools <command>          ← control: snapshot, click, fill, navigate
-    (npm install -g chrome-devtools-mcp)
+```text
+chrome-beta-agent <url>      launcher in this repository
+    |
+http://127.0.0.1:9222        local Chrome DevTools Protocol endpoint
+    |
+compatible CDP tooling      inspect pages and perform authorized actions
+    |
+human review                observe results and approve consequential steps
 ```
 
-The skill file in `skills/SKILL.md` teaches Claude Code and Codex how to use this stack.
+The project instructions describe a `chrome-devtools` control workflow. The control layer is a separate dependency, not implemented by these launcher scripts.
 
 ## Installation
 
@@ -73,118 +48,88 @@ cd browser-agent-cli
 bash install.sh
 ```
 
-`install.sh` copies `chrome-beta-agent` and `chrome-beta-agent-stop` to `~/.local/bin/` and installs the skill to `~/.claude/skills/` and `~/.codex/skills/` if those directories exist.
+`install.sh` copies the launcher and stop helper to `~/.local/bin/`. It also installs the project skill into supported Claude Code and Codex skill directories when those directories exist.
 
 Make sure `~/.local/bin` is in your `PATH`:
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"   # add to ~/.zshrc or ~/.bashrc
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
-Also install the CDP control layer:
+The existing project instructions use this separately installed control layer:
 
 ```bash
 npm install -g chrome-devtools-mcp
 ```
 
+Check the installed control tool's documentation for its supported invocation and options.
+
 ### Requirements
 
 - macOS
-- [Google Chrome Beta](https://www.google.com/chrome/beta/) installed at `/Applications/Google Chrome Beta.app`
-- `curl` and `python3` (pre-installed on macOS)
-- [`jq`](https://jqlang.org) (`brew install jq`)
+- Google Chrome Beta installed at `/Applications/Google Chrome Beta.app`
+- `curl`, `python3`, and `jq` available
+- Compatible CDP control tooling for actions beyond launching the browser
 
 ## Quick start
 
 ```bash
-# Launch Chrome Beta with agent profile and CDP on port 9222
+# Launch the dedicated browser profile
 chrome-beta-agent https://example.com
 
-# Snapshot the page to get element UIDs
+# With the documented control layer available:
 chrome-devtools take_snapshot
-
-# Click an element
-chrome-devtools click "uid=1_5"
-
-# Fill a form field
-chrome-devtools fill "uid=1_8" "search query"
-
-# Navigate
-chrome-devtools navigate_page --url "https://example.com/page"
-
-# Take a screenshot
 chrome-devtools take_screenshot
-
-# Stop the agent browser
-chrome-beta-agent-stop
 ```
 
-## Usage
+Observe the session and review the result. Complete login, CAPTCHA, and multifactor steps yourself when required. Only allow agent actions on accounts and systems you are authorized to use.
 
-### `chrome-beta-agent [url]`
-
-Launches Chrome Beta with a dedicated agent profile and CDP enabled.
+## Launcher usage
 
 ```bash
-chrome-beta-agent                         # open blank tab
-chrome-beta-agent https://example.com     # open URL in new tab
+chrome-beta-agent
+chrome-beta-agent https://example.com
 ```
 
-**Environment variables:**
-
-| Variable | Default | Description |
+| Variable | Default | Purpose |
 |---|---|---|
 | `CHROME_AGENT_PORT` | `9222` | CDP port |
-| `CHROME_AGENT_PROFILE` | `~/.chrome-beta-agent-research` | Agent browser profile directory |
+| `CHROME_AGENT_PROFILE` | `~/.chrome-beta-agent-research` | Browser profile directory |
 
-**Behavior:**
-- If Chrome Beta is already running with a healthy CDP endpoint → opens `url` in a new tab and exits
-- If the agent profile is running but CDP is unhealthy → restarts only the agent profile
-- If port 9222 is occupied by a non-Chrome process → exits with an error message
+The launcher checks the browser and CDP endpoint before reuse and includes recovery behavior for an unhealthy agent session. This is a convenience mechanism, not a guarantee that every browser or port condition will recover automatically.
 
-### `chrome-beta-agent-stop`
-
-Gracefully shuts down Chrome Beta (AppleScript quit → SIGTERM → SIGKILL).
+## Shutdown helper
 
 ```bash
 chrome-beta-agent-stop
 ```
 
-## Agent workflow patterns
+**The current stop helper targets the Chrome Beta application and matching Chrome Beta processes, not just one agent profile.** It can close other Chrome Beta windows and sessions. Save work first; do not use it as a profile-isolated shutdown command.
+
+The helper attempts an application quit, then SIGTERM, and finally SIGKILL if processes remain. A forced shutdown can interrupt in-progress work.
+
+## Agent workflow examples
+
+With the project's documented control layer available:
 
 ```bash
-# Launch and open a page
-chrome-beta-agent https://app.example.com/login
-
-# Read the page (get element UIDs)
+# Observe
 chrome-devtools take_snapshot
-
-# Fill login form
-chrome-devtools fill "uid=1_3" "username@example.com"
-chrome-devtools fill "uid=1_5" "password"
-chrome-devtools click "uid=1_7"
-
-# Wait and snapshot again after navigation
-chrome-devtools take_snapshot
-
-# Collect console errors
 chrome-devtools list_console_messages --types error
-
-# Capture network requests
 chrome-devtools list_network_requests
-
-# Screenshot for verification
 chrome-devtools take_screenshot
 
-# Stop when done
-chrome-beta-agent-stop
+# After the user authorizes the relevant interaction:
+chrome-devtools navigate_page --url "https://example.com/page"
+chrome-devtools fill "uid=1_8" "search query"
+chrome-devtools click "uid=1_5"
 ```
 
-## Skill for AI agents
+Element identifiers are examples; use the current page snapshot rather than assuming an identifier is stable.
 
-`skills/SKILL.md` teaches Claude Code and Codex the full workflow: how to start the browser, control it via CDP, recover from errors, and follow safety rules.
+## Agent instructions
 
-Install manually:
+[skills/SKILL.md](skills/SKILL.md) describes the intended workflow and approval conventions. It can be installed manually:
 
 ```bash
 # Claude Code
@@ -196,28 +141,12 @@ mkdir -p ~/.codex/skills/chrome-devtools-cli
 cp skills/SKILL.md ~/.codex/skills/chrome-devtools-cli/SKILL.md
 ```
 
-Or use `install.sh` — it does this automatically if the skill directories exist.
+## Human control and data handling
 
-## Safety
+The project skill instructs agents to ask before submissions, messages, settings changes, deletions, uploads, or payments, and to hand login challenges back to the user. **These are instructions, not technically enforced approval gates.** Human supervision and appropriate permissions are still required.
 
-Agents using this stack follow these rules by default (enforced in the skill):
+Keep the debugging endpoint local and protect the profile's session data. A separate profile is useful for organizing agent work but is not a security sandbox. Do not use this setup to bypass access controls or a service's restrictions.
 
-- Open pages, read, snapshot, screenshot → automatic
-- Submit forms, send messages, change settings, delete data, upload, pay → ask user first
-- CAPTCHA / MFA / login → stop and ask user to complete manually
+## License
 
-## How this was built
-
-Spec first, then a plan, then implementation with AI coding agents (Claude Code, Codex). Every diff gets reviewed before merge, and releases go through tests and basic security checks. More on the process on the [Nolan Vale profile](https://github.com/nolan-vale).
-
-## Project metadata
-
-- **Author:** Nolan Vale
-- **Brand:** Nolan Vale Tools
-- **Focus:** browser automation, AI agent tooling, Chrome DevTools Protocol, developer productivity
-- **License:** MIT
-
----
-
-Built by [Nolan Vale](https://github.com/nolan-vale)  
-Part of **Nolan Vale Tools** — practical open-source utilities for search, automation, AI agents, and developer workflows.
+MIT — Nolan Vale. See [LICENSE](LICENSE).
