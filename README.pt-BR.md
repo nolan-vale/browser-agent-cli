@@ -1,84 +1,50 @@
-<div align="center">
-
-← [English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
-
 # browser-agent-cli
 
-**Automação de navegador real para agentes de IA — inicie o Chrome Beta com um perfil dedicado ao agente e controle via Chrome DevTools Protocol.**
+**Uma sessão visível do Chrome Beta para tarefas assistidas por IA com supervisão humana no macOS.**
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0ea5e9.svg)](LICENSE)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-0ea5e9.svg)](https://www.apple.com/macos/)
+[English — documentação completa](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
 
-</div>
+## Objetivo e contribuição
 
----
+Um pequeno conjunto de scripts de inicialização e instruções para tarefas repetíveis no navegador. O perfil dedicado organiza o trabalho do agente; a janela visível permite observar e intervir.
 
-`browser-agent-cli` fornece aos agentes de IA um navegador real e visível com um perfil dedicado — isolado do Chrome pessoal do usuário. Sem modo headless. Sem reautenticação. Sem interferência nas sessões do usuário.
+Criado com agentes de programação de IA como parte do trabalho independente de [Nolan Vale](https://github.com/nolan-vale): definir requisitos, orientar a implementação, verificar resultados e iterar. O navegador e seu controle são fornecidos pelo Chrome e por ferramentas CDP externas; este repositório não implementa uma plataforma de navegador própria.
 
-## Stack completo
+## Instalação e início
 
-```
-chrome-beta-agent <url>  →  http://127.0.0.1:9222  →  chrome-devtools <comando>
-```
-
-## Início rápido (60 segundos)
-
-**Passo 1 — Clone e instale:**
 ```bash
 git clone https://github.com/nolan-vale/browser-agent-cli.git
-cd browser-agent-cli && bash install.sh
-```
-
-**Passo 2 — Instale a camada de controle CDP:**
-```bash
-npm install -g chrome-devtools-mcp
-```
-
-**Passo 3 — Inicie o navegador:**
-```bash
+cd browser-agent-cli
+bash install.sh
 chrome-beta-agent https://example.com
 ```
 
-**Passo 4 — Controle:**
+Requer macOS, Chrome Beta em `/Applications/Google Chrome Beta.app`, `curl`, `python3` e `jq`. O controle das páginas requer ferramentas CDP separadas. A configuração documentada usa `chrome-devtools-mcp`; consulte a documentação da versão instalada.
+
 ```bash
-chrome-devtools take_snapshot           # leia a página, obtenha UIDs dos elementos
-chrome-devtools click "uid=1_5"         # clique em um elemento
-chrome-devtools fill "uid=1_8" "texto"  # preencha um campo
-chrome-devtools take_screenshot         # captura de tela
-chrome-beta-agent-stop                  # pare o navegador
+npm install -g chrome-devtools-mcp
+# Exemplos para a camada de controle documentada:
+chrome-devtools take_snapshot
+chrome-devtools take_screenshot
 ```
 
-## Requisitos
+## Comandos e configuração
 
-- macOS
-- [Google Chrome Beta](https://www.google.com/chrome/beta/) em `/Applications/Google Chrome Beta.app`
-- `curl` e `python3` (pré-instalados no macOS)
-- [`jq`](https://jqlang.org) (`brew install jq`)
-
-## Comandos
-
-| Comando | O que faz |
+| Comando | Objetivo |
 |---|---|
-| `chrome-beta-agent [url]` | Inicia o Chrome Beta com perfil do agente e CDP na porta 9222. Se já estiver rodando, abre `url` em nova aba. |
-| `chrome-beta-agent-stop` | Para o navegador do agente de forma limpa. |
-| `chrome-devtools <cmd>` | Controla o navegador via CDP (pacote `chrome-devtools-mcp`). |
+| `chrome-beta-agent [url]` | Iniciar ou reutilizar uma sessão do Chrome Beta com perfil de agente |
+| `chrome-beta-agent-stop` | Encerrar o aplicativo Chrome Beta e os processos correspondentes |
 
-## Variáveis de ambiente
+O padrão de `CHROME_AGENT_PORT` é `9222`; o de `CHROME_AGENT_PROFILE` é `~/.chrome-beta-agent-research`. O instalador copia `skills/SKILL.md` para diretórios compatíveis do Claude Code e Codex quando eles existem.
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `CHROME_AGENT_PORT` | `9222` | Porta CDP |
-| `CHROME_AGENT_PROFILE` | `~/.chrome-beta-agent-research` | Diretório do perfil do agente |
+## Limites e supervisão
 
-## Skill para Claude Code / Codex
+Sessões podem expirar: login, CAPTCHA e MFA são concluídos pelo usuário. Um navegador visível não garante evitar detecção de automação. Um perfil separado não é uma sandbox de segurança.
 
-O `install.sh` instala automaticamente `skills/SKILL.md` em `~/.claude/skills/chrome-devtools-cli/` e `~/.codex/skills/chrome-devtools-cli/` caso esses diretórios existam.
+**O comando de parada atua sobre o Chrome Beta como aplicativo, não apenas sobre o perfil do agente.** Pode fechar outras janelas e encerrar processos à força. Salve o trabalho primeiro.
 
-## Segurança
+As instruções exigem autorização antes de enviar formulários ou mensagens, alterar configurações, excluir dados, enviar arquivos ou fazer pagamentos. São orientações de comportamento, não barreiras técnicas de aprovação. Mantenha supervisão humana, permissões adequadas, o endpoint CDP local e os dados de sessão protegidos.
 
-O agente solicita confirmação antes de: enviar formulários, enviar mensagens, alterar configurações, excluir dados, realizar pagamentos. Para em login, CAPTCHA ou MFA e transfere o controle ao usuário.
+A referência completa está em [README.md](README.md).
 
----
-
-Built by [Nolan Vale](https://github.com/nolan-vale)  
-Part of **Nolan Vale Tools** — practical open-source utilities for search, automation, AI agents, and developer workflows.
+MIT — Nolan Vale. **Nolan Vale Tools** é o nome usado para seus projetos públicos independentes.

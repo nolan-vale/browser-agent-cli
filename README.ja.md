@@ -1,84 +1,50 @@
-<div align="center">
-
-← [English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [한국어](README.ko.md)
-
 # browser-agent-cli
 
-**AI コーディングエージェントのためのリアルブラウザ自動化 — 専用エージェントプロファイルで Chrome Beta を起動し、Chrome DevTools Protocol で制御する。**
+**macOS 上で、人が監督する AI 支援タスクに使う可視 Chrome Beta セッション。**
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0ea5e9.svg)](LICENSE)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-0ea5e9.svg)](https://www.apple.com/macos/)
+[English — 完全なドキュメント](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [한국어](README.ko.md)
 
-</div>
+## 目的と担当範囲
 
----
+繰り返し行うブラウザ作業のための小さな起動スクリプトと操作手順です。専用プロファイルでエージェントの作業を整理し、可視ウィンドウで結果を観察して介入できます。
 
-`browser-agent-cli` は AI エージェントに、ユーザーの個人 Chrome から独立した専用プロファイルを持つ本物の可視ブラウザを提供します。ヘッドレスモードなし。再認証なし。ユーザーのセッションへの干渉なし。
+[Nolan Vale](https://github.com/nolan-vale) の独立した AI 支援プロジェクトとして作成しました。担当は要件定義、コーディングエージェントへの実装指示、結果確認、改善です。ブラウザと制御機能は Chrome と外部 CDP ツールが提供し、このリポジトリが独自ブラウザ基盤を実装しているわけではありません。
 
-## フルスタック
+## インストールと起動
 
-```
-chrome-beta-agent <url>  →  http://127.0.0.1:9222  →  chrome-devtools <コマンド>
-```
-
-## 60 秒クイックスタート
-
-**ステップ 1 — クローンしてインストール：**
 ```bash
 git clone https://github.com/nolan-vale/browser-agent-cli.git
-cd browser-agent-cli && bash install.sh
-```
-
-**ステップ 2 — CDP 制御レイヤーをインストール：**
-```bash
-npm install -g chrome-devtools-mcp
-```
-
-**ステップ 3 — ブラウザを起動：**
-```bash
+cd browser-agent-cli
+bash install.sh
 chrome-beta-agent https://example.com
 ```
 
-**ステップ 4 — 制御：**
+macOS、`/Applications/Google Chrome Beta.app` にある Chrome Beta、`curl`、`python3`、`jq` が必要です。ページ操作には別の CDP ツールが必要です。プロジェクトの手順では `chrome-devtools-mcp` を使用します。呼び出し方はインストールした版のドキュメントで確認してください。
+
 ```bash
-chrome-devtools take_snapshot             # ページを読み取り、要素 UID を取得
-chrome-devtools click "uid=1_5"           # 要素をクリック
-chrome-devtools fill "uid=1_8" "テキスト" # フィールドに入力
-chrome-devtools take_screenshot           # スクリーンショット
-chrome-beta-agent-stop                    # ブラウザを停止
+npm install -g chrome-devtools-mcp
+# 記載されている制御レイヤーの例:
+chrome-devtools take_snapshot
+chrome-devtools take_screenshot
 ```
 
-## 動作要件
+## コマンドと設定
 
-- macOS
-- [Google Chrome Beta](https://www.google.com/chrome/beta/)（`/Applications/Google Chrome Beta.app`）
-- `curl` と `python3`（macOS にプリインストール済み）
-- [`jq`](https://jqlang.org)（`brew install jq`）
-
-## コマンド
-
-| コマンド | 機能 |
+| コマンド | 目的 |
 |---|---|
-| `chrome-beta-agent [url]` | エージェントプロファイルで Chrome Beta を起動し、CDP をポート 9222 で有効化。すでに起動中の場合は `url` を新しいタブで開く。 |
-| `chrome-beta-agent-stop` | エージェントブラウザをクリーンに停止。 |
-| `chrome-devtools <cmd>` | CDP 経由でブラウザを制御（`chrome-devtools-mcp` npm パッケージ）。 |
+| `chrome-beta-agent [url]` | 専用プロファイルの Chrome Beta セッションを起動または再利用 |
+| `chrome-beta-agent-stop` | Chrome Beta アプリと該当プロセスを停止 |
 
-## 環境変数
+`CHROME_AGENT_PORT` の初期値は `9222`、`CHROME_AGENT_PROFILE` は `~/.chrome-beta-agent-research` です。対応するディレクトリが存在する場合、インストーラーは `skills/SKILL.md` を Claude Code と Codex のスキルディレクトリにコピーします。
 
-| 変数 | デフォルト | 説明 |
-|---|---|---|
-| `CHROME_AGENT_PORT` | `9222` | CDP ポート |
-| `CHROME_AGENT_PROFILE` | `~/.chrome-beta-agent-research` | エージェントプロファイルディレクトリ |
+## 制限と人による監督
 
-## Claude Code / Codex スキル
+セッションは期限切れになるため、再ログイン、CAPTCHA、MFA はユーザーが対応します。可視ブラウザでも自動化の検出を回避できる保証はありません。専用プロファイルはセキュリティサンドボックスではありません。
 
-`install.sh` は `~/.claude/skills/` または `~/.codex/skills/` が存在する場合、`skills/SKILL.md` を自動的にインストールします。
+**停止コマンドはエージェントのプロファイルだけでなく、Chrome Beta アプリ全体を対象にします。** ほかのウィンドウを閉じたりプロセスを強制終了したりする可能性があります。先に作業を保存してください。
 
-## セーフティルール
+手順では、フォームやメッセージの送信、設定変更、削除、アップロード、支払いの前にユーザーの許可を求めます。これは行動指示であり、技術的に強制される承認機構ではありません。人の監督と適切な権限が必要です。CDP 接続はローカルに限定し、セッションデータを保護してください。
 
-エージェントはフォーム送信・メッセージ送信・設定変更・データ削除・支払い前にユーザー確認を求めます。ログイン・CAPTCHA・MFA が現れると自動停止し、ユーザーに制御を渡します。
+詳しくは [README.md](README.md) を参照してください。
 
----
-
-Built by [Nolan Vale](https://github.com/nolan-vale)  
-Part of **Nolan Vale Tools** — practical open-source utilities for search, automation, AI agents, and developer workflows.
+MIT — Nolan Vale。**Nolan Vale Tools** は独立した公開プロジェクトの名称です。

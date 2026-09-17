@@ -1,84 +1,50 @@
-<div align="center">
-
-← [English](README.md) · [Русский](README.ru.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
-
 # browser-agent-cli
 
-**AI 编码代理的真实浏览器自动化 — 使用专属代理配置文件启动 Chrome Beta，通过 Chrome DevTools Protocol 进行控制。**
+**在 macOS 上，为人工监督的 AI 辅助任务提供可见的 Chrome Beta 会话。**
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-0ea5e9.svg)](LICENSE)
-[![Platform: macOS](https://img.shields.io/badge/platform-macOS-0ea5e9.svg)](https://www.apple.com/macos/)
+[English — 完整文档](README.md) · [Русский](README.ru.md) · [Português](README.pt-BR.md) · [Español](README.es.md) · [日本語](README.ja.md) · [한국어](README.ko.md)
 
-</div>
+## 用途与项目贡献
 
----
+这是一组用于重复性浏览器任务的启动脚本和操作说明。专用配置文件用于组织代理工作，可见窗口便于观察和人工干预。
 
-`browser-agent-cli` 为 AI 代理提供一个真实的可见浏览器，使用独立于用户个人 Chrome 的专属配置文件。无无头模式。无需重复登录。不干扰用户会话。
+本项目属于 [Nolan Vale](https://github.com/nolan-vale) 的独立 AI 辅助产品实践：定义需求、指导编码代理实现、检查结果并迭代。浏览器及其控制能力由 Chrome 和外部 CDP 工具提供，本仓库并未自行实现浏览器平台。
 
-## 完整技术栈
+## 安装与启动
 
-```
-chrome-beta-agent <url>  →  http://127.0.0.1:9222  →  chrome-devtools <命令>
-```
-
-## 60 秒快速上手
-
-**第一步 — 克隆并安装：**
 ```bash
 git clone https://github.com/nolan-vale/browser-agent-cli.git
-cd browser-agent-cli && bash install.sh
-```
-
-**第二步 — 安装 CDP 控制层：**
-```bash
-npm install -g chrome-devtools-mcp
-```
-
-**第三步 — 启动浏览器：**
-```bash
+cd browser-agent-cli
+bash install.sh
 chrome-beta-agent https://example.com
 ```
 
-**第四步 — 控制浏览器：**
+需要 macOS、位于 `/Applications/Google Chrome Beta.app` 的 Chrome Beta，以及 `curl`、`python3` 和 `jq`。页面控制需要单独的 CDP 工具。项目文档中的配置使用 `chrome-devtools-mcp`，具体调用方式请查看已安装版本的文档。
+
 ```bash
-chrome-devtools take_snapshot            # 读取页面，获取元素 UID
-chrome-devtools click "uid=1_5"          # 点击元素
-chrome-devtools fill "uid=1_8" "文本"    # 输入文本
-chrome-devtools take_screenshot          # 截图
-chrome-beta-agent-stop                   # 停止浏览器
+npm install -g chrome-devtools-mcp
+# 项目文档中控制层的示例：
+chrome-devtools take_snapshot
+chrome-devtools take_screenshot
 ```
 
-## 系统要求
+## 命令与配置
 
-- macOS
-- [Google Chrome Beta](https://www.google.com/chrome/beta/)，安装于 `/Applications/Google Chrome Beta.app`
-- `curl` 和 `python3`（macOS 预装）
-- [`jq`](https://jqlang.org)（`brew install jq`）
-
-## 命令
-
-| 命令 | 功能 |
+| 命令 | 用途 |
 |---|---|
-| `chrome-beta-agent [url]` | 以代理配置文件启动 Chrome Beta，CDP 监听端口 9222。若已运行则在新标签页打开 url。 |
-| `chrome-beta-agent-stop` | 优雅地停止代理浏览器。 |
-| `chrome-devtools <cmd>` | 通过 CDP 控制浏览器（需安装 `chrome-devtools-mcp` npm 包）。 |
+| `chrome-beta-agent [url]` | 启动或复用带代理配置文件的 Chrome Beta 会话 |
+| `chrome-beta-agent-stop` | 停止 Chrome Beta 应用及匹配进程 |
 
-## 环境变量
+`CHROME_AGENT_PORT` 默认为 `9222`；`CHROME_AGENT_PROFILE` 默认为 `~/.chrome-beta-agent-research`。安装程序会在兼容目录存在时，将 `skills/SKILL.md` 复制到 Claude Code 和 Codex 的技能目录。
 
-| 变量 | 默认值 | 说明 |
-|---|---|---|
-| `CHROME_AGENT_PORT` | `9222` | CDP 端口 |
-| `CHROME_AGENT_PROFILE` | `~/.chrome-beta-agent-research` | 代理浏览器配置文件目录 |
+## 限制与人工监督
 
-## Claude Code / Codex 技能
+会话可能过期，需要用户重新登录并完成 CAPTCHA 或 MFA。可见浏览器不保证避开自动化检测。独立配置文件也不是安全沙箱。
 
-`install.sh` 在检测到 `~/.claude/skills/` 或 `~/.codex/skills/` 目录时，自动将 `skills/SKILL.md` 安装至对应位置。
+**停止命令针对整个 Chrome Beta 应用，而不只是代理配置文件。** 它可能关闭其他 Chrome Beta 窗口并强制结束进程。请先保存工作。
 
-## 安全规则
+项目说明要求在提交表单、发送消息、更改设置、删除数据、上传文件或付款之前获得用户授权。这些是行为指令，并非技术上强制执行的审批机制。仍需人工监督和适当权限；调试端点应仅在本机使用，并妥善保护会话数据。
 
-代理在以下操作前需用户确认：提交表单、发送消息、修改设置、删除数据、付款。遇到登录、CAPTCHA 或 MFA 时自动暂停并移交用户处理。
+完整说明见 [README.md](README.md)。
 
----
-
-Built by [Nolan Vale](https://github.com/nolan-vale)  
-Part of **Nolan Vale Tools** — practical open-source utilities for search, automation, AI agents, and developer workflows.
+MIT — Nolan Vale。**Nolan Vale Tools** 是其独立公开项目所使用的名称。
